@@ -1,9 +1,63 @@
-import example.pepita
+import Criaturas.* 
+import Colonias.*
 
-describe "group of tests for pepita" {
+describe "Tests del Bosque Encantado" {
 
-  test "pepita has initial energy" {
-    assert.equals(100, pepita.energy())
-  }
+    // Mascotas
+    const fenix = new CriaturaMitologica(edad = 15, tieneCuernos = false)
+    const unicornio = new CriaturaMitologica(edad = 12, tieneCuernos = true)
+    const dragonBebe = new CriaturaMitologica(edad = 1, tieneCuernos = false)
 
+    // Roles
+    const domadorExperto = new Domador(criaturasDomadas = #{fenix, unicornio})
+    const domadorNovato = new Domador(criaturasDomadas = #{dragonBebe})
+
+    // Criaturas
+    const hadaAstuta = new Hada(poderMagico = 20, astucia = 60, rolEnElParque = domadorExperto, kmQuePuedeVolar = 15)
+    const duendeGuardián = new Duende(poderMagico = 60, astucia = 10, rolEnElParque = guardian)
+    const duendeHechicero = new Duende(poderMagico = 30, astucia = 5, rolEnElParque = hechicero)
+
+    // Zonas y Colonias
+    const coloniaInvasora = new Colonia(criaturas = [duendeGuardián, hadaAstuta])
+    const coloniaDefensora = new Colonia(criaturas = [duendeHechicero])
+    
+    const castilloFuerte = new Castillo(colonia = coloniaInvasora)
+    const claroVulnerable = new Claro(colonia = coloniaDefensora)
+
+
+    test "Poder ofensivo de un Duende Guardián aplica el 10% extra" {
+        assert.equals(770, duendeGuardián.poderOfensivo())
+    }
+
+    test "Hada con astucia mayor a 50 es considerada formidable" {
+        assert.that(hadaAstuta.esFormidable())
+    }
+
+    test "Duende nunca es astuto, incluso si su stat es alto" {
+        const duendeAstutoFalso = new Duende(poderMagico = 10, astucia = 99, rolEnElParque = hechicero)
+        assert.notThat(duendeAstutoFalso.esAstuta())
+    }
+
+    test "Ritual de Hechicero a Guardián funciona correctamente" {
+        duendeHechicero.ritualCambioDeRol()
+        assert.equals(100, duendeHechicero.rolEnElParque().extra())
+    }
+
+    test "Ritual de Domador falla si no tiene mascotas con cuernos" {
+        const hadaNovata = new Hada(poderMagico = 10, astucia = 10, rolEnElParque = domadorNovato)
+        
+        assert.throwsExceptionWithMessage("El domador no tiene mascotas con cuernos, falla el ritual.", { 
+            hadaNovata.ritualCambioDeRol() 
+        })
+    }
+
+    test "Colonia invasora conquista un claro y lo usurpa" {
+        coloniaInvasora.conquistarUnArea(claroVulnerable)
+        assert.equals(1220, claroVulnerable.poderDefensivo())
+    }
+
+    test "Colonia débil intenta conquistar un castillo, falla y pierde 15% de magia" {
+        coloniaDefensora.conquistarUnArea(castilloFuerte)
+        assert.equals(25.5, duendeHechicero.poderMagico())
+    }
 }
